@@ -41,6 +41,7 @@ const OPUS_SET_PACKET_LOSS_PERC: c_int = 4014; // in i32
 const OPUS_GET_PACKET_LOSS_PERC: c_int = 4015; // out *i32
 const OPUS_SET_DTX_REQUEST: c_int = 4016;
 const OPUS_GET_DTX_REQUEST: c_int = 4017;
+const OPUS_SET_SIGNAL_REQUEST: c_int = 4024;
 const OPUS_GET_LOOKAHEAD: c_int = 4027; // out *i32
 const OPUS_GET_IN_DTX_REQUEST: c_int = 4049;
 // Decoder CTLs
@@ -73,6 +74,17 @@ pub enum Channels {
 	Mono = 1,
 	/// Two channels, left and right.
 	Stereo = 2,
+}
+
+/// The available signal setings.
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub enum Signal {
+	/// Auto/default setting.
+        Auto = -1000,
+        /// Signal being encoded is voice
+        Voice = 3001,
+        /// Signal being encoded is music
+        Music = 3002,
 }
 
 /// The available bandwidth level settings.
@@ -379,7 +391,7 @@ impl Encoder {
 		Ok(())
 	}
 
-	/// Gets encoder's configured use of discontinuous transmission. 
+	/// Gets encoder's configured use of discontinuous transmission.
 	pub fn get_dtx(&mut self) -> Result<bool> {
 		let mut value: i32 = 0;
 		enc_ctl!(self, OPUS_GET_DTX_REQUEST, &mut value);
@@ -401,6 +413,12 @@ impl Encoder {
 		Ok(value != 0)
 	}
 
+        /// Configures the type of signal being encoded.
+	pub fn set_signal(&mut self, signal: Signal) -> Result<()> {
+                let value: i32 = signal as i32;
+		enc_ctl!(self, OPUS_SET_SIGNAL_REQUEST, value);
+		Ok(())
+	}
 
 	// TODO: Encoder-specific CTLs
 }
